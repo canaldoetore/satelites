@@ -440,12 +440,12 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            cloudRotation += 0.0001;
+            cloudRotation += 0.00013;
             clouds.rotation.y = cloudRotation;
 			
-			earth.rotation.y += 0.0002;  // Velocidade da Terra
+			earth.rotation.y += 0.0001;  // Velocidade da Terra
             
-            stars.rotation.y += 0.0002;
+            stars.rotation.y += 0.0001;
             stars.rotation.x += 0.0001;
             
             const time = Date.now() * 0.005;
