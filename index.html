@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Rastreamento da ISS - Com Imagem do Servidor</title>
+    <title>Rastreamento da ISS - Com Trilha Orbital</title>
     <style>
         body {
             margin: 0;
@@ -83,48 +82,27 @@
             pointer-events: none;
         }
         
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 200;
-            background: rgba(0,0,0,0.8);
-            color: #00ff88;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 14px;
-            pointer-events: none;
-            backdrop-filter: blur(5px);
-        }
-        
         @media (max-width: 600px) {
             #info { font-size: 10px; padding: 8px 12px; }
             #coordinates { font-size: 8px; }
             .status { font-size: 8px; }
             .controls-panel { font-size: 8px; }
-            .loading { font-size: 10px; padding: 10px 20px; }
         }
     </style>
 </head>
 <body>
     <div id="info">
-        <h1>🚀 Rastreamento da ISS - Imagem do Servidor</h1>
-        <p>Posição em tempo real | Carregando imagem automaticamente</p>
+        <h1>🚀 Rastreamento da ISS - Com Trilha Orbital</h1>
+        <p>Posição em tempo real | Linha tracejada mostra o caminho percorrido</p>
     </div>
-    
     <div id="coordinates">
         📍 Lat: <span id="lat">--</span>° | Lon: <span id="lon">--</span>° | Alt: ~408 km
     </div>
     <div class="status">
-        🛰️ Status: <span id="status">Carregando imagem...</span>
+        🛰️ Status: <span id="status">Conectando...</span>
     </div>
     <div class="controls-panel">
         🖱️ Mouse: Arrastar = Rotacionar | Scroll = Zoom
-    </div>
-    <div class="loading" id="loading">
-        🚀 Carregando imagem da ISS...
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -192,186 +170,73 @@
         scene.add(atmosphere);
         
         // ==============================================
-        // ISS COM IMAGEM DO SERVIDOR (CARREGAMENTO AUTOMÁTICO)
+        // TRILHA ORBITAL (LINHA TRACEJADA)
         // ==============================================
+        const trailLength = 200; // Número de pontos na trilha
+        const trailPositions = []; // Array para armazenar posições históricas
+        const trailRadius = 1.05; // Mesmo raio da órbita da ISS
         
-        let issSprite = null;
-        let glowSprite = null;
-        let issGroup = new THREE.Group();
-        scene.add(issGroup);
-        
-        // NOME DO ARQUIVO DA SUA IMAGEM
-        // ALTERE ESTA LINHA PARA O NOME DO SEU ARQUIVO PNG
-        const imagemISS = 'iss.png';  // ← Coloque aqui o nome do seu arquivo
-        
-        // Carregar imagem automaticamente do servidor
-        function loadISSImageFromServer() {
-            // Tentar carregar a imagem do servidor
-            const imageUrl = imagemISS;
-            
-            textureLoader.load(imageUrl, 
-                // Sucesso - imagem carregada
-                function(texture) {
-                    // Criar sprite com a imagem carregada
-                    const issMaterial = new THREE.SpriteMaterial({ 
-                        map: texture,
-                        color: 0xffffff,
-                        transparent: true,
-                        opacity: 0.95
-                    });
-                    
-                    issSprite = new THREE.Sprite(issMaterial);
-                    issSprite.scale.set(0.18, 0.18, 1);
-                    
-                    // Criar glow
-                    const glowMaterial = new THREE.SpriteMaterial({
-                        color: 0x44aaff,
-                        transparent: true,
-                        opacity: 0.4,
-                        blending: THREE.AdditiveBlending
-                    });
-                    glowSprite = new THREE.Sprite(glowMaterial);
-                    glowSprite.scale.set(0.28, 0.28, 1);
-                    
-                    issGroup.add(issSprite);
-                    issGroup.add(glowSprite);
-                    
-                    // Esconder mensagem de loading
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('status').innerHTML = '✅ Imagem carregada';
-                    
-                    setTimeout(() => {
-                        if (document.getElementById('status').innerHTML === '✅ Imagem carregada') {
-                            document.getElementById('status').innerHTML = '✅ Em órbita';
-                        }
-                    }, 2000);
-                    
-                    console.log('✅ Imagem da ISS carregada com sucesso:', imageUrl);
-                },
-                // Progresso (opcional)
-                undefined,
-                // Erro - imagem não encontrada
-                function(error) {
-                    console.error('❌ Erro ao carregar imagem:', imageUrl);
-                    document.getElementById('loading').innerHTML = '⚠️ Imagem não encontrada: ' + imagemISS + '<br>Coloque o arquivo na mesma pasta do HTML';
-                    document.getElementById('status').innerHTML = '⚠️ Imagem não encontrada';
-                    document.getElementById('status').style.color = '#ffaa00';
-                    
-                    // Criar uma imagem alternativa (fallback)
-                    createFallbackISS();
-                }
-            );
-        }
-        
-        // Função de fallback caso a imagem não seja encontrada
-        function createFallbackISS() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Desenhar uma ISS simples como fallback
-            ctx.fillStyle = '#ccddff';
-            ctx.fillRect(180, 230, 150, 60);
-            ctx.fillStyle = '#aabbdd';
-            ctx.fillRect(160, 240, 30, 40);
-            ctx.fillRect(320, 240, 30, 40);
-            ctx.fillStyle = '#3366aa';
-            ctx.fillRect(50, 235, 110, 50);
-            ctx.fillRect(350, 235, 110, 50);
-            ctx.fillStyle = '#ffaa44';
-            for (let i = 0; i < 4; i++) {
-                ctx.fillRect(70 + i*25, 245, 10, 30);
-                ctx.fillRect(370 + i*25, 245, 10, 30);
-            }
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px Arial';
-            ctx.fillText('ISS', 225, 310);
-            ctx.font = '14px Arial';
-            ctx.fillStyle = '#ffaa66';
-            ctx.fillText('Imagem não encontrada', 180, 350);
-            
-            const fallbackTexture = new THREE.CanvasTexture(canvas);
-            const fallbackMaterial = new THREE.SpriteMaterial({ 
-                map: fallbackTexture,
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.95
-            });
-            
-            issSprite = new THREE.Sprite(fallbackMaterial);
-            issSprite.scale.set(0.18, 0.18, 1);
-            
-            const glowMaterial = new THREE.SpriteMaterial({
-                color: 0x44aaff,
-                transparent: true,
-                opacity: 0.4,
-                blending: THREE.AdditiveBlending
-            });
-            glowSprite = new THREE.Sprite(glowMaterial);
-            glowSprite.scale.set(0.28, 0.28, 1);
-            
-            issGroup.add(issSprite);
-            issGroup.add(glowSprite);
-            
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-            }, 3000);
-        }
-        
-        // Iniciar carregamento da imagem
-        loadISSImageFromServer();
-        
-        // ==============================================
-        // TRILHA ORBITAL
-        // ==============================================
-        const trailLength = 150;
-        const trailPositions = [];
-        const trailRadius = 1.05;
+        // Criar a geometria da linha
         const trailGeometry = new THREE.BufferGeometry();
+        
+        // Material da linha (tracejada usando textura personalizada)
         const trailMaterial = new THREE.LineBasicMaterial({ color: 0x00ff88 });
+        
+        // Alternativa para linha tracejada: criar pontos com espaçamento
         let trailLine = null;
         
-        const trailPoints = [];
-        const pointMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00ff88,
-            emissive: 0x00aa44,
-            emissiveIntensity: 0.5
-        });
-        
+        // Função para atualizar a trilha
         function updateTrail(currentPosition) {
+            // Adicionar posição atual ao início do array
             trailPositions.unshift(currentPosition.clone());
             
+            // Manter apenas os últimos 'trailLength' pontos
             while (trailPositions.length > trailLength) {
                 trailPositions.pop();
             }
             
+            // Se temos pelo menos 2 pontos, criar a linha
             if (trailPositions.length >= 2) {
+                // Criar array de vértices para a geometria
                 const vertices = [];
                 for (let i = 0; i < trailPositions.length; i++) {
                     vertices.push(trailPositions[i].x, trailPositions[i].y, trailPositions[i].z);
                 }
                 
-                trailGeometry.dispose();
+                // Atualizar geometria
+                trailGeometry.dispose(); // Limpar geometria antiga
                 const positions = new Float32Array(vertices);
                 trailGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 
+                // Remover linha antiga e criar nova
                 if (trailLine) scene.remove(trailLine);
+                
+                // Criar linha contínua
                 trailLine = new THREE.Line(trailGeometry, trailMaterial);
                 scene.add(trailLine);
                 
+                // Adicionar pontos esféricos para efeito tracejado
                 addTrailPoints();
             }
         }
         
+        // Criar pontos esféricos adicionais para efeito tracejado
+        const trailPoints = [];
+        const pointMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ff88,
+            emissive: 0x00aa44,
+            emissiveIntensity: 0.5,
+            metalness: 0.8
+        });
+        
         function addTrailPoints() {
+            // Remover pontos antigos
             trailPoints.forEach(point => scene.remove(point));
             trailPoints.length = 0;
             
+            // Adicionar novos pontos a cada 5 posições (para criar efeito tracejado)
             for (let i = 0; i < trailPositions.length; i += 5) {
-                const sphereGeo = new THREE.SphereGeometry(0.006, 6, 6);
+                const sphereGeo = new THREE.SphereGeometry(0.008, 6, 6);
                 const sphere = new THREE.Mesh(sphereGeo, pointMaterial);
                 sphere.position.copy(trailPositions[i]);
                 scene.add(sphere);
@@ -379,10 +244,12 @@
             }
         }
         
-        // Anel orbital
+        // Criar um anel orbital completo (círculo de referência)
         const orbitRingPoints = [];
-        for (let i = 0; i <= 360; i++) {
-            const angle = (i / 360) * Math.PI * 2;
+        const ringSegments = 360;
+        for (let i = 0; i <= ringSegments; i++) {
+            const angle = (i / ringSegments) * Math.PI * 2;
+            // Órbita circular no plano equatorial (simplificada)
             const x = trailRadius * Math.cos(angle);
             const z = trailRadius * Math.sin(angle);
             orbitRingPoints.push(new THREE.Vector3(x, 0, z));
@@ -394,9 +261,71 @@
             orbitVertices.push(point.x, point.y, point.z);
         });
         orbitRingGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(orbitVertices), 3));
+        
         const orbitRingMaterial = new THREE.LineBasicMaterial({ color: 0x3366aa, transparent: true, opacity: 0.3 });
         const orbitRing = new THREE.LineLoop(orbitRingGeometry, orbitRingMaterial);
         scene.add(orbitRing);
+        
+        // ==============================================
+        // ISS 4x menor que o original
+        // ==============================================
+        const issGroup = new THREE.Group();
+        
+        // Corpo principal
+        const bodyGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.03, 8);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xccccdd, metalness: 0.8, roughness: 0.3, emissive: 0x111122 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0;
+        issGroup.add(body);
+        
+        // Painéis solares
+        const panelMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, metalness: 0.9, roughness: 0.2, emissive: 0x224466 });
+        
+        const leftPanelGeo = new THREE.BoxGeometry(0.04, 0.0035, 0.015);
+        const leftPanel = new THREE.Mesh(leftPanelGeo, panelMat);
+        leftPanel.position.set(-0.0250, 0.0040, 0);
+        issGroup.add(leftPanel);
+        
+        const rightPanelGeo = new THREE.BoxGeometry(0.04, 0.0035, 0.015);
+        const rightPanel = new THREE.Mesh(rightPanelGeo, panelMat);
+        rightPanel.position.set(0.0250, 0.0040, 0);
+        issGroup.add(rightPanel);
+        
+        // Listras dos painéis
+        const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, metalness: 0.5 });
+        for (let i = -0.0375; i <= 0.0375; i += 0.01875) {
+            const stripeGeo = new THREE.BoxGeometry(0.0025, 0.00125, 0.0150);
+            
+            const stripeLeft = new THREE.Mesh(stripeGeo, stripeMat);
+            stripeLeft.position.set(-0.0250, 0.0040, i);
+            issGroup.add(stripeLeft);
+            
+            const stripeRight = new THREE.Mesh(stripeGeo, stripeMat);
+            stripeRight.position.set(0.0250, 0.0040, i);
+            issGroup.add(stripeRight);
+        }
+        
+        // Módulo superior
+        const topGeo = new THREE.SphereGeometry(0.005, 4, 4);
+        const topMat = new THREE.MeshStandardMaterial({ color: 0xaaaaff, metalness: 0.7 });
+        const topModule = new THREE.Mesh(topGeo, topMat);
+        topModule.position.set(0, 0.0175, 0);
+        issGroup.add(topModule);
+        
+        // Antena
+        const antennaMat = new THREE.MeshStandardMaterial({ color: 0xffaa66 });
+        const antennaGeo = new THREE.CylinderGeometry(0.001, 0.0015, 0.01, 3);
+        const antenna = new THREE.Mesh(antennaGeo, antennaMat);
+        antenna.position.set(0, 0.0235, 0);
+        issGroup.add(antenna);
+        
+        // Glow
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0x44aaff, transparent: true, opacity: 0.3, side: THREE.BackSide });
+        const glowGeo = new THREE.SphereGeometry(0.03, 8, 8);
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        issGroup.add(glow);
+        
+        scene.add(issGroup);
         
         // Iluminação
         const ambientLight = new THREE.AmbientLight(0x404060);
@@ -431,6 +360,7 @@
         // Rastreamento da ISS
         let issLat = 0;
         let issLon = 0;
+        let lastPosition = null;
         
         function latLonToVector3(lat, lon, radius) {
             const phi = (90 - lat) * Math.PI / 180;
@@ -450,15 +380,13 @@
                 issLon = data.longitude;
                 document.getElementById('lat').innerHTML = issLat.toFixed(4);
                 document.getElementById('lon').innerHTML = issLon.toFixed(4);
-                
-                if (document.getElementById('status').innerHTML !== '⚠️ Imagem não encontrada') {
-                    document.getElementById('status').innerHTML = '✅ Em órbita';
-                    document.getElementById('status').style.color = '#00ff88';
-                }
+                document.getElementById('status').innerHTML = '✅ Em órbita';
+                document.getElementById('status').style.color = '#00ff88';
                 
                 const radius = 1.05;
                 const newPosition = latLonToVector3(issLat, issLon, radius);
                 
+                // Adicionar à trilha ANTES de mover (para incluir posição atual)
                 updateTrail(newPosition);
                 
                 const currentPos = issGroup.position;
@@ -474,22 +402,17 @@
                     t = Math.sin(t * Math.PI / 2);
                     issGroup.position.lerpVectors(startPos, endPos, t);
                     
-                    if (glowSprite) {
-                        glowSprite.position.copy(issSprite.position);
-                    }
-                    
                     if (t < 1) {
                         requestAnimationFrame(animatePosition);
                     }
                 }
                 animatePosition();
+                issGroup.lookAt(0, 0, 0);
                 
             } catch (error) {
                 console.error('Erro ao buscar dados da ISS:', error);
-                if (document.getElementById('status').innerHTML !== '⚠️ Imagem não encontrada') {
-                    document.getElementById('status').innerHTML = '⚠️ Offline (modo demo)';
-                    document.getElementById('status').style.color = '#ffaa00';
-                }
+                document.getElementById('status').innerHTML = '⚠️ Offline (modo demo)';
+                document.getElementById('status').style.color = '#ffaa00';
                 
                 const demoLat = 30 * Math.sin(Date.now() / 30000);
                 const demoLon = (Date.now() / 20000) % 360 - 180;
@@ -497,13 +420,14 @@
                 
                 updateTrail(demoPos);
                 issGroup.position.lerp(demoPos, 0.1);
+                issGroup.lookAt(0, 0, 0);
                 
                 document.getElementById('lat').innerHTML = demoLat.toFixed(2);
                 document.getElementById('lon').innerHTML = demoLon.toFixed(2);
             }
         }
         
-        // Inicializar
+        // Inicializar trilha com posição atual
         setTimeout(() => {
             fetchISSData();
         }, 100);
@@ -512,22 +436,20 @@
         
         // Animações
         let cloudRotation = 0;
-        let time = 0;
         
         function animate() {
             requestAnimationFrame(animate);
             
-            cloudRotation += 0.0005;
+            cloudRotation += 0.0001;
             clouds.rotation.y = cloudRotation;
+			
+			earth.rotation.y += 0.0002;  // Velocidade da Terra
             
             stars.rotation.y += 0.0002;
             stars.rotation.x += 0.0001;
             
-            if (glowSprite) {
-                time = Date.now() * 0.005;
-                const pulse = 0.2 + Math.sin(time * 2) * 0.1;
-                glowSprite.material.opacity = pulse;
-            }
+            const time = Date.now() * 0.005;
+            glow.material.opacity = 0.2 + Math.sin(time * 2) * 0.1;
             
             controls.update();
             renderer.render(scene, camera);
@@ -542,8 +464,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
         
-        console.log('🌍 Visualizador da ISS iniciado - Imagem carregada automaticamente do servidor');
-        console.log('📁 Procura pelo arquivo:', imagemISS);
+        console.log('🌍 Visualizador da ISS com Trilha Orbital iniciado');
     </script>
 </body>
 </html>
