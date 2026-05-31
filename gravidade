@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Gravidade no Sistema Solar + Sol | Comparador & Gráfico</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Poppins', 'Arial', sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-body);
+        }
+
+        /* Temas (modo noturno/diurno) com contraste otimizado */
+        :root {
+            --bg-body: linear-gradient(145deg, #03071e 0%, #03071e 40%, #0a0f2a 100%);
+            --card-bg: rgba(15, 25, 45, 0.92);
+            --card-border: rgba(255, 215, 150, 0.35);
+            --text-primary: #f5f3f0;
+            --text-secondary: #cbd5e6;
+            --text-muted: #a0b3cc;
+            --accent: #ffb347;
+            --accent-soft: #ffcd94;
+            --accent-glow: rgba(255, 180, 71, 0.2);
+            --select-bg: #0e1a2a;
+            --select-border: #3e5a7c;
+            --info-bg: rgba(7, 16, 28, 0.8);
+            --result-bg: rgba(7, 18, 30, 0.9);
+            --chart-bg: rgba(10, 20, 35, 0.8);
+            --label-color: #f0e6d0;
+        }
+
+        body.light-mode {
+            --bg-body: linear-gradient(135deg, #eef2fa 0%, #dfe8f5 100%);
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --card-border: rgba(80, 100, 140, 0.3);
+            --text-primary: #1a2c3e;
+            --text-secondary: #2c4c6c;
+            --text-muted: #4a627a;
+            --accent: #d97a00;
+            --accent-soft: #f0a54d;
+            --accent-glow: rgba(217, 122, 0, 0.15);
+            --select-bg: #ffffff;
+            --select-border: #b9cee8;
+            --info-bg: #eef3fc;
+            --result-bg: #e2ebf6;
+            --chart-bg: rgba(255, 255, 255, 0.9);
+            --label-color: #1f3b4c;
+        }
+
+        /* Card principal */
+        .card {
+            max-width: 1300px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            padding: 1.8rem 2rem 2rem;
+            transition: all 0.2s;
+        }
+
+        /* Header com toggle */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #FFE6B0, #FFB347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .theme-toggle {
+            background: var(--select-bg);
+            border: 1px solid var(--accent);
+            border-radius: 3rem;
+            padding: 0.5rem 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: #1e1e2a;
+            border-color: var(--accent);
+        }
+
+        .sub {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--accent);
+            padding-left: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        /* layout 2 colunas */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 850px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .card {
+                padding: 1.2rem;
+            }
+        }
+
+        /* painel esquerdo */
+        .select-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--label-color);
+            margin-bottom: 0.4rem;
+            display: block;
+            font-size: 0.95rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--select-bg);
+            border: 1.5px solid var(--select-border);
+            border-radius: 2rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffb347' stroke-width='2'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+
+        .gravity-result {
+            background: var(--result-bg);
+            border-radius: 1.8rem;
+            padding: 1.2rem 1rem;
+            margin: 1.2rem 0;
+            text-align: center;
+            border: 1px solid var(--accent);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .gravity-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-soft);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .gravity-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .gravity-unit {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .compare-earth {
+            font-size: 0.85rem;
+            margin-top: 0.6rem;
+            color: var(--text-muted);
+            background: var(--accent-glow);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 2rem;
+        }
+
+        /* comparador duplo */
+        .double-compare {
+            background: var(--info-bg);
+            border-radius: 1.5rem;
+            padding: 0.8rem 1rem;
+            margin-top: 1rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .compare-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .compare-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .compare-card {
+            background: var(--card-bg);
+            padding: 0.6rem;
+            border-radius: 1rem;
+            text-align: center;
+            flex: 1;
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .compare-card strong {
+            color: var(--accent);
+        }
+
+        .weight-calc {
+            margin-top: 0.8rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .weight-calc span {
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .weight-calc input {
+            background: var(--select-bg);
+            border: 1px solid var(--select-border);
+            border-radius: 2rem;
+            padding: 0.4rem 0.8rem;
+            width: 100px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* gráfico */
+        .chart-container {
+            background: var(--chart-bg);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .chart-container div:first-child {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        canvas {
+            max-height: 320px;
+            width: 100%;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            background: var(--info-bg);
+            border-radius: 1.5rem;
+            padding: 0.8rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+            border: 1px solid var(--card-border);
+        }
+
+        .info-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .info-label {
+            font-weight: 400;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--accent-soft);
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            padding-top: 1rem;
+        }
+
+        button.small {
+            background: var(--accent);
+            border: none;
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #1e1e2a;
+            transition: 0.2s;
+        }
+
+        button.small:hover {
+            filter: brightness(0.95);
+            transform: scale(0.98);
+        }
+
+        #weightResult {
+            margin-top: 8px;
+            font-weight: 600;
+            text-align: center;
+            background: var(--accent-glow);
+            border-radius: 2rem;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="header-row">
+        <h1>🪐 Gravidade + Comparador 🌞</h1>
+        <div class="theme-toggle" id="themeToggle">🌓 Alternar Modo</div>
+    </div>
+    <div class="sub">Planetas, Planetas Anões e SOL | Compare, veja gráfico e seu peso em outros mundos</div>
+
+    <div class="main-grid">
+        <!-- COLUNA ESQUERDA: seleção + resultados individuais + comparador de peso -->
+        <div>
+            <div class="select-group">
+                <label>🔭 Selecione o corpo celeste:</label>
+                <select id="celestialSelect">
+                    <option value="sol">☀️ Sol (Estrela)</option>
+                    <option value="mercurio">☿ Mercúrio</option>
+                    <option value="venus">♀ Vênus</option>
+                    <option value="terra" selected>🌍 Terra</option>
+                    <option value="marte">♂ Marte</option>
+                    <option value="jupiter">♃ Júpiter</option>
+                    <option value="saturno">♄ Saturno</option>
+                    <option value="urano">⛢ Urano</option>
+                    <option value="netuno">♆ Netuno</option>
+                    <option value="plutao">⯓ Plutão (Anão)</option>
+                    <option value="ceres">🌾 Ceres (Anão)</option>
+                    <option value="eris">⯰ Éris (Anão)</option>
+                    <option value="makemake">🌀 Makemake (Anão)</option>
+                    <option value="haumea">⚡ Haumea (Anão)</option>
+                </select>
+            </div>
+
+            <div class="gravity-result" id="gravityResult">
+                <div class="gravity-label">🌡️ GRAVIDADE SUPERFICIAL</div>
+                <div class="gravity-value" id="gravityDisplay">9.81</div>
+                <div class="gravity-unit">metros por segundo ao quadrado (m/s²)</div>
+                <div class="compare-earth" id="earthCompare"></div>
+            </div>
+
+            <div class="info-panel" id="infoPanel">
+                <div class="info-item"><div class="info-label">Massa (kg)</div><div class="info-value" id="massValue">5.972 × 10²⁴</div></div>
+                <div class="info-item"><div class="info-label">Raio médio (km)</div><div class="info-value" id="radiusValue">6,371</div></div>
+                <div class="info-item"><div class="info-label">Tipo</div><div class="info-value" id="typeValue">Planeta</div></div>
+            </div>
+
+            <!-- Comparador interplanetário e cálculo de peso -->
+            <div class="double-compare">
+                <div class="compare-title">⚖️ COMPARADOR DIRETO COM A TERRA</div>
+                <div class="compare-row" id="comparisonWithEarth">
+                    <div class="compare-card"><strong>🌍 Terra</strong><br>g = 9.81 m/s²</div>
+                    <div class="compare-card"><strong id="otherName">Marte</strong><br><span id="otherGravity">3.71</span> m/s²</div>
+                </div>
+                <div class="weight-calc">
+                    <span>🧑‍🚀 Seu peso na Terra (massa):</span>
+                    <input type="number" id="weightInput" value="70" step="1" style="width:100px;"> kg
+                    <button id="calcWeightBtn" class="small">Calcular</button>
+                </div>
+                <div id="weightResult">👉 Peso no corpo selecionado: -- newtons (N)</div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA: Gráfico de barras -->
+        <div class="chart-container">
+            <div style="font-weight: bold; margin-bottom: 8px;">📊 Gravidade comparativa (m/s²)</div>
+            <canvas id="gravityChart" width="400" height="280" style="width:100%; max-height:300px"></canvas>
+            <div style="font-size: 0.7rem; text-align: center; margin-top: 8px; color: var(--text-muted);">* Inclui Sol (escala adaptada). Barra destacada = corpo selecionado.</div>
+        </div>
+    </div>
+    <footer>
+        Cálculo: g = G·M / R² | G = 6.67430×10⁻¹¹ | Dados NASA / JPL. A gravidade do Sol é imensa (~274 m/s²).
+        Gráfico com escala real para comparação direta.
+    </footer>
+</div>
+
+<script>
+    // Constante G
+    const G = 6.67430e-11;
+
+    // Dados completos incluindo SOL e todos planetas/planetas anões
+    const bodiesData = {
+        sol: { name: "Sol", mass: 1.9885e30, radius: 696340000, type: "Estrela (anã amarela)", symbol: "☀️" },
+        mercurio: { name: "Mercúrio", mass: 3.3011e23, radius: 2439700, type: "Planeta Telúrico", symbol: "☿" },
+        venus: { name: "Vênus", mass: 4.8675e24, radius: 6051800, type: "Planeta Telúrico", symbol: "♀" },
+        terra: { name: "Terra", mass: 5.9722e24, radius: 6371000, type: "Planeta Telúrico", symbol: "🌍" },
+        marte: { name: "Marte", mass: 6.4171e23, radius: 3389500, type: "Planeta Telúrico", symbol: "♂" },
+        jupiter: { name: "Júpiter", mass: 1.8982e27, radius: 69911000, type: "Gigante Gasoso", symbol: "♃" },
+        saturno: { name: "Saturno", mass: 5.6834e26, radius: 58232000, type: "Gigante Gasoso", symbol: "♄" },
+        urano: { name: "Urano", mass: 8.6810e25, radius: 25362000, type: "Gigante de Gelo", symbol: "⛢" },
+        netuno: { name: "Netuno", mass: 1.02413e26, radius: 24622000, type: "Gigante de Gelo", symbol: "♆" },
+        plutao: { name: "Plutão", mass: 1.303e22, radius: 1188300, type: "Planeta Anão (gelo)", symbol: "⯓" },
+        ceres: { name: "Ceres", mass: 9.3835e20, radius: 473000, type: "Planeta Anão (cinturão)", symbol: "🌾" },
+        eris: { name: "Éris", mass: 1.6466e22, radius: 1163000, type: "Planeta Anão (disperso)", symbol: "⯰" },
+        makemake: { name: "Makemake", mass: 3.1e21, radius: 715000, type: "Planeta Anão", symbol: "🌀" },
+        haumea: { name: "Haumea", mass: 4.006e21, radius: 780000, type: "Planeta Anão (alongado)", symbol: "⚡" }
+    };
+
+    // Função para calcular gravidade
+    function computeGravity(massKg, radiusM) {
+        return (G * massKg) / (radiusM * radiusM);
+    }
+
+    // Formatação
+    function formatMass(massKg) {
+        if (massKg >= 1e30) return (massKg / 1e30).toFixed(3) + " × 10³⁰";
+        if (massKg >= 1e27) return (massKg / 1e27).toFixed(3) + " × 10²⁷";
+        if (massKg >= 1e24) return (massKg / 1e24).toFixed(3) + " × 10²⁴";
+        if (massKg >= 1e21) return (massKg / 1e21).toFixed(3) + " × 10²¹";
+        return massKg.toExponential(3);
+    }
+    function formatRadius(radiusM) { return (radiusM/1000).toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " km"; }
+
+    // Variáveis globais do gráfico
+    let gravityChart = null;
+    let currentGravityValues = [];
+
+    // Obter lista ordenada para o gráfico (incluindo Sol)
+    function getAllBodiesOrdered() {
+        const order = ["sol", "jupiter", "saturno", "netuno", "urano", "terra", "venus", "marte", "mercurio", "plutao", "eris", "haumea", "makemake", "ceres"];
+        return order.filter(id => bodiesData[id]).map(id => ({ id, ...bodiesData[id] }));
+    }
+
+    // Atualizar gráfico
+    function updateChart(selectedId) {
+        const all = getAllBodiesOrdered();
+        const labels = all.map(b => b.symbol + " " + b.name);
+        const gravities = all.map(b => computeGravity(b.mass, b.radius));
+        currentGravityValues = gravities;
+        
+        // Cor diferenciada para o item selecionado
+        const backgroundColors = all.map(b => (b.id === selectedId) ? '#ffaa44' : '#4d88ff');
+        const borderColors = all.map(b => (b.id === selectedId) ? '#ffcc66' : '#2c5f8a');
+        
+        if (gravityChart) {
+            gravityChart.data.labels = labels;
+            gravityChart.data.datasets[0].data = gravities;
+            gravityChart.data.datasets[0].backgroundColor = backgroundColors;
+            gravityChart.data.datasets[0].borderColor = borderColors;
+            gravityChart.update();
+        } else {
+            const ctx = document.getElementById('gravityChart').getContext('2d');
+            gravityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Aceleração da gravidade (m/s²)',
+                        data: gravities,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1.5,
+                        borderRadius: 8,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toFixed(2)} m/s²` } },
+                        legend: { position: 'top', labels: { color: '#ddd' } }
+                    },
+                    scales: {
+                        y: { 
+                            title: { display: true, text: 'g (m/s²)', color: '#aaa' }, 
+                            ticks: { color: '#bbb' }, 
+                            grid: { color: '#334455' } 
+                        },
+                        x: { 
+                            ticks: { rotation: 35, autoSkip: true, maxRotation: 45, color: '#ccc' } 
+                        }
+                    }
+                }
+            });
+        }
+        // ajustar cores do gráfico conforme tema atual
+        syncChartTheme();
+    }
+    
+    function syncChartTheme() {
+        if (!gravityChart) return;
+        const isLight = document.body.classList.contains('light-mode');
+        const axisColor = isLight ? '#2c3e50' : '#e0e0e0';
+        const gridColor = isLight ? '#ccd7e8' : '#334455';
+        const labelColor = isLight ? '#1f3b4c' : '#f0f0f0';
+        gravityChart.options.plugins.legend.labels.color = labelColor;
+        gravityChart.options.scales.x.ticks.color = labelColor;
+        gravityChart.options.scales.y.ticks.color = labelColor;
+        gravityChart.options.scales.y.title.color = labelColor;
+        gravityChart.options.scales.x.grid.color = gridColor;
+        gravityChart.options.scales.y.grid.color = gridColor;
+        gravityChart.update();
+    }
+
+    // Atualizar toda interface com base no ID selecionado
+    function updateAll(selectedId) {
+        const data = bodiesData[selectedId];
+        if (!data) return;
+        const g = computeGravity(data.mass, data.radius);
+        const earthG = computeGravity(bodiesData.terra.mass, bodiesData.terra.radius);
+        const ratio = (g / earthG).toFixed(3);
+        
+        document.getElementById('gravityDisplay').innerText = g.toFixed(3);
+        document.getElementById('earthCompare').innerHTML = (selectedId === 'terra') ? "🌍 Gravidade padrão da Terra (referência)" : `⚖️ ${ratio} × gravidade terrestre (${g.toFixed(2)} m/s²)`;
+        document.getElementById('massValue').innerHTML = formatMass(data.mass);
+        document.getElementById('radiusValue').innerHTML = formatRadius(data.radius);
+        document.getElementById('typeValue').innerHTML = data.type;
+        
+        // Atualizar comparador: corpo selecionado vs terra
+        document.getElementById('otherName').innerHTML = data.name;
+        document.getElementById('otherGravity').innerHTML = g.toFixed(3);
+        
+        // recalcular peso baseado no input atual
+        calculateWeightForSelected();
+        
+        // atualizar gráfico e destacar barra
+        updateChart(selectedId);
+    }
+    
+    // Função para calcular peso no corpo selecionado
+    function calculateWeightForSelected() {
+        const selectedId = document.getElementById('celestialSelect').value;
+        const data = bodiesData[selectedId];
+        if (!data) return;
+        const gSelected = computeGravity(data.mass, data.radius);
+        let weightOnEarthKg = parseFloat(document.getElementById('weightInput').value);
+        if (isNaN(weightOnEarthKg) || weightOnEarthKg <= 0) weightOnEarthKg = 70;
+        // A massa da pessoa é o mesmo valor numérico (kg-massa)
+        const massPerson = weightOnEarthKg;
+        const weightNewtons = (massPerson * gSelected).toFixed(2);
+        const kgfEquivalent = (massPerson * gSelected / 9.80665).toFixed(2);
+        document.getElementById('weightResult').innerHTML = `⚡ Seu peso em <strong>${data.name}</strong> seria <strong style="color:var(--accent);">${weightNewtons} N</strong> (newtons)<br> 🧠 Equivalente a ${kgfEquivalent} kg-força na superfície.`;
+    }
+    
+    // Manipular tema claro/escuro com contraste melhorado
+    function initTheme() {
+        const isLight = localStorage.getItem('gravityTheme') === 'light';
+        if (isLight) document.body.classList.add('light-mode');
+        else document.body.classList.remove('light-mode');
+        const toggle = document.getElementById('themeToggle');
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const nowLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('gravityTheme', nowLight ? 'light' : 'dark');
+            syncChartTheme();
+            // forcando pequena atualização visual nas labels customizadas (já via CSS)
+        });
+        syncChartTheme();
+    }
+    
+    // Eventos e inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+        const selectEl = document.getElementById('celestialSelect');
+        selectEl.addEventListener('change', (e) => updateAll(e.target.value));
+        const weightInput = document.getElementById('weightInput');
+        weightInput.addEventListener('input', () => calculateWeightForSelected());
+        document.getElementById('calcWeightBtn').addEventListener('click', () => calculateWeightForSelected());
+        
+        // valores padrão
+        updateAll('terra');
+        initTheme();
+        
+        // Observador para mudanças de tema via CSS (garantia extra)
+        const observer = new MutationObserver(() => syncChartTheme());
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    });
+</script>
+</body>
+</html>
