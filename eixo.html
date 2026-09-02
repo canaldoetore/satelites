@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>NASA • Inclinação Axial dos Planetas — 3D Interativo</title>
+<title>NASA • Inclinação Axial dos Planetas</title>
 <style>
 :root{
-  --bg:#01040a;--panel:rgba(5,12,22,.84);--panel2:rgba(9,20,34,.72);
-  --line:#54c8ff;--text:#f5f8ff;--muted:#8fa5bd;--accent:#7bddff;
+  --bg:#01040a;--panel:rgba(5,12,22,.84);
+  --text:#f5f8ff;--muted:#8fa5bd;--accent:#7bddff;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:#01040a;color:var(--text);font-family:Arial,Helvetica,sans-serif}
-body{min-height:100vh;overflow-x:hidden}
+html,body{margin:0;background:#01040a;color:var(--text);font-family:Arial,Helvetica,sans-serif;height:100vh;overflow:hidden}
 body:before{
  content:"";position:fixed;inset:0;pointer-events:none;opacity:.85;
  background-image:
@@ -25,114 +24,198 @@ body:before{
  radial-gradient(1px 1px at 94% 82%,#fff,transparent);
  background-size:260px 190px;
 }
-.wrap{width:min(1500px,95vw);margin:auto;padding:28px 0 44px;position:relative}
-header{text-align:center;margin-bottom:20px}
-.kicker{font-size:11px;letter-spacing:4px;color:var(--accent);font-weight:bold;text-transform:uppercase}
-h1{font-size:clamp(28px,4vw,56px);margin:8px 0 7px;letter-spacing:2px;text-transform:uppercase}
-.subtitle{color:var(--muted);font-size:14px;margin:0 auto;max-width:900px}
-.rule{height:1px;background:linear-gradient(90deg,transparent,#318bb5,transparent);margin:20px auto;max-width:1050px}
+.wrap{width:min(1500px,95vw);margin:auto;padding:15px 0 20px;position:relative;height:100vh;display:flex;flex-direction:column}
+header{text-align:center;margin-bottom:8px;flex-shrink:0}
+.kicker{font-size:10px;letter-spacing:4px;color:var(--accent);font-weight:bold;text-transform:uppercase}
+h1{font-size:clamp(20px,2.5vw,36px);margin:3px 0;letter-spacing:2px;text-transform:uppercase}
+.subtitle{color:var(--muted);font-size:12px;margin:0 auto;max-width:900px}
+.rule{height:1px;background:linear-gradient(90deg,transparent,#318bb5,transparent);margin:8px auto;max-width:1050px}
 
 .controls{
- display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:12px;
- padding:14px;background:var(--panel);border:1px solid rgba(84,200,255,.2);
- border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.35);backdrop-filter:blur(10px);margin-bottom:18px
+ display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:10px;
+ padding:8px 14px;background:var(--panel);border:1px solid rgba(84,200,255,.2);
+ border-radius:12px;backdrop-filter:blur(10px);margin-bottom:8px;flex-shrink:0
 }
-.control{padding:4px 8px}
-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:7px}
+.control{padding:2px 6px}
+label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:3px}
 select,input[type=range],button{width:100%}
 select,button{
- background:#071321;color:#eaf7ff;border:1px solid #23516a;border-radius:7px;padding:10px 11px;font-weight:bold
+ background:#071321;color:#eaf7ff;border:1px solid #23516a;border-radius:7px;padding:7px 10px;font-weight:bold;font-size:12px
 }
 button{cursor:pointer;transition:.2s}
 button:hover{border-color:var(--accent);box-shadow:0 0 16px rgba(84,200,255,.13)}
-input[type=range]{accent-color:#5fcfff}
+input[type=range]{accent-color:#5fcfff;height:5px}
 .speedValue{color:var(--accent);font-weight:bold}
 
 .scene{
- position:relative;height:clamp(330px,46vw,610px);border-radius:15px;overflow:hidden;
- background:
- radial-gradient(circle at 50% 50%,rgba(32,93,135,.11),transparent 36%),
- radial-gradient(circle at 50% 50%,rgba(0,0,0,.2),transparent 70%),
- #020811;
+ position:relative;flex:1;border-radius:15px;overflow:hidden;
+ background:radial-gradient(circle at 50% 50%,rgba(32,93,135,.08),transparent 70%),#020811;
  border:1px solid rgba(84,200,255,.2);
- box-shadow:inset 0 0 90px rgba(0,0,0,.65),0 20px 50px rgba(0,0,0,.35);
- perspective:1000px;
+ box-shadow:inset 0 0 60px rgba(0,0,0,.65),0 20px 50px rgba(0,0,0,.35);
+ display:flex;align-items:center;justify-content:center;
+ min-height:350px;
 }
-.scene:after{
- content:"";position:absolute;inset:0;pointer-events:none;
- background:linear-gradient(90deg,rgba(0,0,0,.25),transparent 25%,transparent 75%,rgba(0,0,0,.25));
+.planet-container{
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ padding:20px;
 }
-.gridlines{position:absolute;inset:0;opacity:.16;background:
- linear-gradient(rgba(75,184,230,.18) 1px,transparent 1px),
- linear-gradient(90deg,rgba(75,184,230,.18) 1px,transparent 1px);
- background-size:80px 80px;transform:perspective(500px) rotateX(60deg) scale(1.5);transform-origin:center bottom}
-.hud{position:absolute;z-index:10;left:16px;top:14px;color:#7894ad;font:10px monospace;letter-spacing:1px}
+.planet-wrapper{
+ position:relative;
+ width:320px;
+ height:320px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ transition:transform 0.3s ease;
+}
+.planet-axis{
+ position:absolute;
+ width:4px;
+ height:420px;
+ background:linear-gradient(#83ddff,#d8f7ff 48%,#83ddff);
+ box-shadow:0 0 20px rgba(84,200,255,.6);
+ border-radius:5px;
+ z-index:1;
+ transform-origin:center;
+ transition:transform 0.3s ease;
+}
+.planet-axis::before,
+.planet-axis::after{
+ content:'';
+ position:absolute;
+ left:50%;
+ transform:translateX(-50%);
+ width:0;
+ height:0;
+ border-left:9px solid transparent;
+ border-right:9px solid transparent;
+}
+.planet-axis::before{
+ top:-12px;
+ border-bottom:16px solid #83ddff;
+ filter:drop-shadow(0 0 10px rgba(84,200,255,.5));
+}
+.planet-axis::after{
+ bottom:-12px;
+ border-top:16px solid #83ddff;
+ filter:drop-shadow(0 0 10px rgba(84,200,255,.5));
+}
+
+.planet-sphere{
+ width:250px;
+ height:250px;
+ border-radius:50%;
+ position:relative;
+ z-index:2;
+ box-shadow:
+   inset -45px -45px 70px rgba(0,0,0,0.7),
+   inset 35px 35px 55px rgba(255,255,255,0.15),
+   0 0 60px rgba(100,210,255,0.08);
+ transition:all 0.3s ease;
+}
+/* Efeito de volume com gradiente esférico */
+.planet-sphere::before{
+ content:'';
+ position:absolute;
+ inset:0;
+ border-radius:50%;
+ background:radial-gradient(ellipse at 30% 25%, rgba(255,255,255,0.3) 0%, transparent 60%);
+ pointer-events:none;
+}
+.planet-sphere::after{
+ content:'';
+ position:absolute;
+ inset:0;
+ border-radius:50%;
+ background:radial-gradient(ellipse at 70% 75%, rgba(0,0,0,0.4) 0%, transparent 60%);
+ pointer-events:none;
+}
+
+/* Cores dos planetas com efeito volumétrico */
+.mercury .planet-sphere{background:radial-gradient(ellipse at 40% 35%, #d3c6a7 0%, #7b6b5a 50%, #373536 100%)}
+.venus .planet-sphere{background:radial-gradient(ellipse at 40% 30%, #f5b56b 0%, #b55e1b 45%, #4d210a 100%)}
+.earth .planet-sphere{background:radial-gradient(ellipse at 45% 30%, #8bc77a 0%, #3d8f58 40%, #062552 100%)}
+.mars .planet-sphere{background:radial-gradient(ellipse at 40% 30%, #e4844f 0%, #a84728 45%, #3a130b 100%)}
+.jupiter .planet-sphere{background:radial-gradient(ellipse at 35% 35%, #ead39b 0%, #c68b4b 35%, #5a2f1a 80%, #30170a 100%)}
+.saturn .planet-sphere{background:radial-gradient(ellipse at 40% 30%, #e4cb94 0%, #d9b87d 30%, #6b4c28 80%, #3d2a14 100%)}
+.uranus .planet-sphere{background:radial-gradient(ellipse at 40% 25%, #a6eff1 0%, #58c8d3 45%, #0a4050 100%)}
+.neptune .planet-sphere{background:radial-gradient(ellipse at 45% 30%, #7bb8f0 0%, #438ed3 40%, #0c2a5a 100%)}
+
+/* Anéis de Saturno */
+.rings{
+ position:absolute;
+ width:330px;
+ height:85px;
+ border:14px solid rgba(220,197,151,0.6);
+ border-radius:50%;
+ transform:rotateX(65deg) rotateZ(-15deg);
+ z-index:3;
+ box-shadow:0 0 30px rgba(255,226,172,0.1);
+ pointer-events:none;
+ transition:all 0.3s ease;
+}
+.rings::after{
+ content:'';
+ position:absolute;
+ inset:6px;
+ border:7px solid rgba(80,61,38,0.25);
+ border-radius:50%;
+}
+
+.planet-name{
+ color:#dff7ff;
+ font-size:18px;
+ font-weight:bold;
+ margin-top:12px;
+ text-shadow:0 0 30px rgba(84,200,255,0.3);
+ letter-spacing:2px;
+}
+
+.hud{
+ position:absolute;z-index:10;left:16px;top:14px;color:#7894ad;font:10px monospace;letter-spacing:1px;pointer-events:none
+}
 .hud span{color:#dff7ff}
 
-.orbit{position:absolute;inset:12%;border:1px solid rgba(83,193,236,.12);border-radius:50%;transform:rotateX(68deg);box-shadow:0 0 35px rgba(48,166,220,.04)}
-
-.stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d}
-.planetRig{position:relative;width:260px;height:260px;transform-style:preserve-3d;transition:transform .4s ease}
-.planetAxis{
- position:absolute;left:50%;top:50%;width:4px;height:360px;margin:-180px 0 0 -2px;
- background:linear-gradient(#83ddff,#d8f7ff 48%,#83ddff);
- box-shadow:0 0 12px rgba(84,200,255,.9);border-radius:5px;z-index:1;
- transform-origin:center;pointer-events:none
-}
-.planet{
- position:absolute;left:50%;top:50%;width:210px;height:210px;margin:-105px 0 0 -105px;
- border-radius:50%;z-index:3;transform-style:preserve-3d;
- box-shadow:inset 30px 24px 45px rgba(255,255,255,.14),inset -38px -30px 55px rgba(0,0,0,.62),0 0 38px rgba(100,210,255,.08);
- animation:spin 7s linear infinite;
-}
-/* Efeito de volume com gradiente radial e pseudo-3D */
-.planet:before{
- content:"";position:absolute;inset:0;border-radius:50%;opacity:.55;
- background:repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.07) 19px 22px,transparent 23px 38px);
- mix-blend-mode:overlay
-}
-.planet:after{
- content:"";position:absolute;inset:-1px;border-radius:50%;
- background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.34),transparent 17%),radial-gradient(circle at 65% 68%,rgba(0,0,0,.34),transparent 55%);
-}
-@keyframes spin{to{transform:rotateY(360deg)}}
-.paused .planet{animation-play-state:paused}
-
-/* Texturas volumétricas aprimoradas com gradientes complexos */
-.mercury{background:radial-gradient(circle at 35% 30%,#cbbd99 0 5%,transparent 6%),radial-gradient(circle at 67% 57%,#5c5148 0 9%,transparent 10%),radial-gradient(circle at 50% 50%,#d3c6a7 0%,#7b6b5a 48%,#373536 100%)}
-.venus{background:radial-gradient(circle at 40% 35%,#f5b56b 0%,#b55e1b 40%,#7a3a0f 70%,#4d210a 100%)}
-.earth{background:radial-gradient(circle at 60% 30%,#8bc77a 0%,#3d8f58 35%,#1a5a3a 65%,#062552 100%)}
-.mars{background:radial-gradient(circle at 40% 35%,#e4844f 0%,#a84728 40%,#6d2d20 70%,#3a130b 100%)}
-.jupiter{background:radial-gradient(circle at 30% 40%,#ead39b 0%,#c68b4b 30%,#8e5130 55%,#5a2f1a 80%,#30170a 100%)}
-.saturn{background:radial-gradient(circle at 35% 30%,#e4cb94 0%,#d9b87d 30%,#997346 55%,#6b4c28 80%,#3d2a14 100%)}
-.uranus{background:radial-gradient(circle at 40% 25%,#a6eff1 0%,#58c8d3 40%,#1c7d8e 70%,#0a4050 100%)}
-.neptune{background:radial-gradient(circle at 45% 30%,#7bb8f0 0%,#438ed3 40%,#1e519d 70%,#0c2a5a 100%)}
-
-.rings{position:absolute;left:50%;top:50%;width:295px;height:78px;margin:-39px 0 0 -147px;border:15px solid rgba(220,197,151,.75);border-radius:50%;transform:rotateX(65deg) rotateZ(-14deg);z-index:4;box-shadow:0 0 8px rgba(255,226,172,.2)}
-.rings:after{content:"";position:absolute;inset:7px;border:5px solid rgba(80,61,38,.45);border-radius:50%}
-
 .info{
- display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:14px;margin-top:18px
+ display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px;margin-top:8px;flex-shrink:0
 }
 .infoCard{
- background:var(--panel);border:1px solid rgba(84,200,255,.17);border-radius:11px;padding:15px
+ background:var(--panel);border:1px solid rgba(84,200,255,.17);border-radius:11px;padding:8px 14px
 }
-.big{font-size:34px;font-weight:800;color:#fff}.unit{color:var(--accent);font-size:14px}
-.name{font-size:19px;font-weight:bold}.muted{color:var(--muted);font-size:11px;margin-top:4px}
-.bar{height:7px;background:#09131f;border-radius:10px;overflow:hidden;margin-top:13px}
+.big{font-size:28px;font-weight:800;color:#fff}.unit{color:var(--accent);font-size:13px}
+.name{font-size:16px;font-weight:bold}.muted{color:var(--muted);font-size:10px;margin-top:2px}
+.bar{height:5px;background:#09131f;border-radius:10px;overflow:hidden;margin-top:8px}
 .fill{height:100%;width:0;background:linear-gradient(90deg,#246b8a,#79ddff);transition:width .25s}
-.readout{font:11px monospace;color:#8fa9bf;line-height:1.8}
-.legend{margin-top:16px;color:#8296ab;font-size:11px;line-height:1.6;text-align:center}
-@media(max-width:900px){.controls{grid-template-columns:1fr 1fr}.info{grid-template-columns:1fr}.scene{height:480px}}
-@media(max-width:560px){.controls{grid-template-columns:1fr}.scene{height:410px}.planetRig{transform:scale(.75)}}
+.readout{font:10px monospace;color:#8fa9bf;line-height:1.6}
+.legend{margin-top:5px;color:#8296ab;font-size:9px;line-height:1.4;text-align:center;flex-shrink:0}
+@media(max-width:900px){.controls{grid-template-columns:1fr 1fr}.info{grid-template-columns:1fr}}
+@media(max-width:768px){
+ .planet-wrapper{width:240px;height:240px}
+ .planet-sphere{width:180px;height:180px}
+ .planet-axis{height:320px}
+ .rings{width:250px;height:65px;border-width:10px}
+ .scene{min-height:280px}
+}
+@media(max-width:560px){
+ .controls{grid-template-columns:1fr}
+ .planet-wrapper{width:200px;height:200px}
+ .planet-sphere{width:150px;height:150px}
+ .planet-axis{height:270px}
+ .rings{width:210px;height:55px;border-width:8px}
+ .scene{min-height:240px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
  <div class="kicker">Solar System • Interactive Planetary Science</div>
- <h1>Inclinação Axial • 3D</h1>
- <p class="subtitle">Explore a inclinação do eixo de rotação de cada planeta e observe sua representação tridimensional em tempo real.</p>
+ <h1>Inclinação Axial</h1>
+ <p class="subtitle">Explore a inclinação do eixo de rotação de cada planeta com visualização volumétrica</p>
  <div class="rule"></div>
 </header>
 
@@ -147,32 +230,29 @@ input[type=range]{accent-color:#5fcfff}
  </div>
  <div class="control">
   <label>Inclinação axial: <span class="speedValue" id="tiltLabel">23.26°</span></label>
-  <input id="tiltRange" type="range" min="0" max="180" step=".01" value="23.26">
+  <input id="tiltRange" type="range" min="0" max="180" step=".1" value="23.26">
  </div>
- <div class="control">
-  <label>Velocidade de rotação: <span class="speedValue" id="speedLabel">1.0×</span></label>
-  <input id="speedRange" type="range" min=".1" max="3" step=".1" value="1">
+ <div class="control" style="display:flex;align-items:flex-end;padding-bottom:6px">
+  <button id="resetBtn" style="width:100%;padding:10px">↺ Resetar</button>
  </div>
- <div class="control"><label>Controle</label><button id="pauseBtn">⏸ Pausar</button></div>
 </section>
 
 <section class="scene" id="scene">
- <div class="gridlines"></div><div class="orbit"></div>
  <div class="hud">NASA STYLE / AXIAL TILT<br><span id="hudPlanet">EARTH</span> • <span id="hudTilt">23.26°</span></div>
- <div class="stage">
-  <div class="planetRig" id="rig">
-   <div class="planetAxis" id="axis"></div>
-   <div class="planet earth" id="planet"></div>
-   <!-- anéis de Saturno aparecem condicionalmente -->
-   <div id="ringsContainer" style="position:absolute;left:50%;top:50%;width:0;height:0;z-index:5;pointer-events:none"></div>
+ <div class="planet-container" id="planetContainer">
+  <div class="planet-wrapper" id="wrapper">
+   <div class="planet-axis" id="axis"></div>
+   <div class="planet-sphere" id="planet"></div>
+   <div class="rings" id="rings" style="display:none"></div>
   </div>
+  <div class="planet-name" id="planetName">Terra</div>
  </div>
 </section>
 
 <section class="info">
  <div class="infoCard">
   <div class="name" id="infoName">Terra</div><div class="muted" id="infoType">Planeta rochoso</div>
-  <div style="margin-top:12px"><span class="big" id="infoTilt">23.26</span><span class="unit">°</span></div>
+  <div style="margin-top:8px"><span class="big" id="infoTilt">23.26</span><span class="unit">°</span></div>
  </div>
  <div class="infoCard">
   <div class="muted">INCLINAÇÃO RELATIVA</div>
@@ -182,18 +262,19 @@ input[type=range]{accent-color:#5fcfff}
  <div class="infoCard">
   <div class="muted">MODO DE VISUALIZAÇÃO</div>
   <div class="readout">
-   ● ESFERA COM SOMBREAMENTO 3D<br>
+   ● ESFERA VOLUMÉTRICA 2D<br>
    ● EIXO DE ROTAÇÃO INTERATIVO<br>
-   ● ROTAÇÃO CONTÍNUA<br>
+   ● SEM ROTAÇÃO - VISUALIZAÇÃO ESTÁTICA<br>
    ● CONTROLE MANUAL DO ÂNGULO
   </div>
  </div>
 </section>
-<div class="legend">Os valores são os dados reproduzidos da imagem fornecida. O modelo 3D é uma visualização estilizada para fins didáticos e não está em escala.</div>
+<div class="legend">Visualização estática com efeito volumétrico. Arraste o controle de inclinação para ver o eixo se mover.</div>
 </div>
 
 <script>
-const data={
+// Dados dos planetas
+const data = {
  "Mercúrio":{tilt:0.01,type:"Planeta rochoso",cls:"mercury",note:"Eixo praticamente vertical."},
  "Vênus":{tilt:177.3,type:"Planeta rochoso",cls:"venus",note:"Rotação retrógrada; o eixo está orientado de forma quase invertida."},
  "Terra":{tilt:23.26,type:"Planeta rochoso",cls:"earth",note:"Inclinação responsável, em conjunto com a órbita, pelas estações do ano."},
@@ -204,64 +285,81 @@ const data={
  "Netuno":{tilt:28.32,type:"Gigante de gelo",cls:"neptune",note:"Inclinação moderada."}
 };
 
-const select=document.getElementById("planetSelect"), range=document.getElementById("tiltRange");
-const speed=document.getElementById("speedRange"), planet=document.getElementById("planet");
-const axis=document.getElementById("axis"), rig=document.getElementById("rig"), scene=document.getElementById("scene");
-const pauseBtn=document.getElementById("pauseBtn");
-const ringsContainer=document.getElementById("ringsContainer");
+const select = document.getElementById('planetSelect');
+const tiltRange = document.getElementById('tiltRange');
+const resetBtn = document.getElementById('resetBtn');
+const planet = document.getElementById('planet');
+const wrapper = document.getElementById('wrapper');
+const axis = document.getElementById('axis');
+const rings = document.getElementById('rings');
+const planetName = document.getElementById('planetName');
 
-function setPlanet(name, custom=false){
- const d=data[name];
- if(!custom) range.value=d.tilt;
- // Aplica classe do planeta com textura volumétrica
- planet.className="planet "+d.cls;
- document.getElementById("tiltLabel").textContent=Number(range.value).toFixed(2)+"°";
- document.getElementById("infoName").textContent=name;
- document.getElementById("infoType").textContent=d.type;
- document.getElementById("infoTilt").textContent=Number(range.value).toFixed(2);
- document.getElementById("hudPlanet").textContent=name.toUpperCase();
- document.getElementById("hudTilt").textContent=Number(range.value).toFixed(2)+"°";
- document.getElementById("readout").textContent=d.note;
- document.getElementById("fill").style.width=(Number(range.value)/180*100)+"%";
- // Exibe anéis apenas para Saturno
- if(name === "Saturno") {
-   if(!document.querySelector('.rings')) {
-     const ringsDiv = document.createElement('div');
-     ringsDiv.className = 'rings';
-     ringsDiv.id = 'ringsElement';
-     ringsContainer.appendChild(ringsDiv);
-   }
- } else {
-   const ringsEl = document.getElementById('ringsElement');
-   if(ringsEl) ringsEl.remove();
- }
- updateAxis();
+let currentTiltAngle = 23.26;
+
+function setPlanet(name) {
+ const d = data[name];
+ if (!d) return;
+ 
+ // Atualiza classe do wrapper para a cor do planeta
+ wrapper.className = 'planet-wrapper ' + d.cls;
+ 
+ // Mostra/esconde anéis para Saturno
+ rings.style.display = (name === 'Saturno') ? 'block' : 'none';
+ 
+ // Atualiza nome
+ planetName.textContent = name;
+ 
+ // Atualiza informações
+ document.getElementById('infoName').textContent = name;
+ document.getElementById('infoType').textContent = d.type;
+ document.getElementById('readout').textContent = d.note;
+ document.getElementById('hudPlanet').textContent = name.toUpperCase();
+ 
+ // Atualiza tilt
+ tiltRange.value = d.tilt;
+ currentTiltAngle = d.tilt;
+ updateTilt(currentTiltAngle);
 }
-function updateAxis(){
- const v=Number(range.value);
- axis.style.transform="rotate("+v+"deg)";
- // Inclina o conjunto em profundidade para dar sensação 3D.
- rig.style.transform="rotateX("+(Math.min(v,180-v)*.12)+"deg)";
- document.getElementById("tiltLabel").textContent=v.toFixed(2)+"°";
- document.getElementById("infoTilt").textContent=v.toFixed(2);
- document.getElementById("hudTilt").textContent=v.toFixed(2)+"°";
- document.getElementById("fill").style.width=(v/180*100)+"%";
+
+function updateTilt(value) {
+ const tilt = parseFloat(value);
+ currentTiltAngle = tilt;
+ 
+ // Aplica rotação ao eixo
+ axis.style.transform = `rotate(${tilt}deg)`;
+ 
+ // Aplica inclinação ao conjunto para dar profundidade
+ const depthAngle = Math.min(tilt, 180 - tilt) * 0.12;
+ wrapper.style.transform = `rotateX(${depthAngle}deg)`;
+ 
+ // Atualiza UI
+ document.getElementById('tiltLabel').textContent = tilt.toFixed(2) + '°';
+ document.getElementById('infoTilt').textContent = tilt.toFixed(2);
+ document.getElementById('hudTilt').textContent = tilt.toFixed(2) + '°';
+ document.getElementById('fill').style.width = (tilt / 180 * 100) + '%';
 }
-function updateSpeed(){
- const v=Number(speed.value);
- document.documentElement.style.setProperty("--spin-speed",v);
- planet.style.animationDuration=(7/v)+"s";
- document.getElementById("speedLabel").textContent=v.toFixed(1)+"×";
-}
-select.addEventListener("change",()=>setPlanet(select.value));
-range.addEventListener("input",()=>setPlanet(select.value,true));
-speed.addEventListener("input",updateSpeed);
-pauseBtn.addEventListener("click",()=>{
- scene.classList.toggle("paused");
- const paused=scene.classList.contains("paused");
- pauseBtn.textContent=paused?"▶ Continuar":"⏸ Pausar";
+
+// Event listeners
+select.addEventListener('change', () => {
+ setPlanet(select.value);
 });
-setPlanet("Terra"); updateSpeed();
+
+tiltRange.addEventListener('input', () => {
+ const tilt = parseFloat(tiltRange.value);
+ updateTilt(tilt);
+});
+
+resetBtn.addEventListener('click', () => {
+ const currentPlanet = select.value;
+ const d = data[currentPlanet];
+ if (d) {
+   tiltRange.value = d.tilt;
+   updateTilt(d.tilt);
+ }
+});
+
+// Inicializa
+setPlanet('Terra');
 </script>
 </body>
 </html>
